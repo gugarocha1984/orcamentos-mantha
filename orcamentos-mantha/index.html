@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1E3A5F">
+  <title>Orçamentos Mantha</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <div>
+      <div class="brand">Mantha</div>
+      <div class="subtitle">Orçamentos</div>
+    </div>
+    <button class="back-btn" id="btnBack" style="display:none" aria-label="Voltar">&larr;</button>
+  </header>
+
+  <main>
+
+    <!-- =========================================================
+         TELA: Home
+         ========================================================= -->
+    <section id="screen-home" class="screen active">
+      <div class="home-menu">
+        <button class="menu-card" data-goto="medidor">
+          <div class="icon">📐</div>
+          <div class="info">
+            <h3>Nova medição</h3>
+            <p>Registrar dados da visita técnica</p>
+          </div>
+          <div class="arrow">→</div>
+        </button>
+
+        <button class="menu-card" data-goto="orcamentista">
+          <div class="icon accent">📋</div>
+          <div class="info">
+            <h3>Medições recebidas</h3>
+            <p>Elaborar orçamentos pendentes</p>
+          </div>
+          <div class="arrow">→</div>
+        </button>
+
+        <button class="menu-card" data-goto="sistemas">
+          <div class="icon">⚙️</div>
+          <div class="info">
+            <h3>Sistemas de impermeabilização</h3>
+            <p>Cadastrar e editar</p>
+          </div>
+          <div class="arrow">→</div>
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         TELA: Medidor — nova medição
+         ========================================================= -->
+    <section id="screen-medidor" class="screen">
+      <h1 class="screen-title">Nova medição</h1>
+      <p class="screen-subtitle">Preencha os dados da obra e vá adicionando pavimentos e ambientes.</p>
+
+      <form id="formMedicao">
+
+        <div class="card">
+          <div class="card-title">Dados da obra</div>
+          <div class="field">
+            <label for="cliente">Cliente <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="cliente" required placeholder="Ex: Pedro Nakad">
+          </div>
+          <div class="row two">
+            <div class="field">
+              <label for="contato">Contato</label>
+              <input type="tel" id="contato" placeholder="(18) 99999-9999">
+            </div>
+            <div class="field">
+              <label for="dataVisita">Data da visita <span style="color:var(--danger)">*</span></label>
+              <input type="date" id="dataVisita" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="endereco">Endereço</label>
+            <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade">
+          </div>
+          <div class="field">
+            <label for="obsGeral">Observações gerais</label>
+            <textarea id="obsGeral" placeholder="Detalhes importantes sobre a obra..."></textarea>
+          </div>
+        </div>
+
+        <div id="pavimentosList"></div>
+
+        <button type="button" class="btn btn-secondary btn-block mt-2" id="btnAddPavimento">
+          + Adicionar pavimento
+        </button>
+
+        <div class="action-bar">
+          <button type="button" class="btn btn-secondary" id="btnCancelMedicao">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnEnviar">Enviar para orçamento</button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- =========================================================
+         TELA: Orçamentista — lista de medições
+         ========================================================= -->
+    <section id="screen-orcamentista" class="screen">
+      <h1 class="screen-title">Medições recebidas</h1>
+      <p class="screen-subtitle">Lista de solicitações do Arthur para elaborar orçamento.</p>
+
+      <div id="pushBanner" style="display:none"></div>
+
+      <div id="medicoesList">
+        <div class="loading">Carregando…</div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         TELA: Detalhe da medição
+         ========================================================= -->
+    <section id="screen-detalhe" class="screen">
+      <div id="detalheContent"></div>
+    </section>
+
+    <!-- =========================================================
+         TELA: Sistemas
+         ========================================================= -->
+    <section id="screen-sistemas" class="screen">
+      <h1 class="screen-title">Sistemas</h1>
+      <p class="screen-subtitle">Adicione os sistemas de impermeabilização que a Mantha utiliza.</p>
+
+      <div class="sistema-form">
+        <input type="text" id="novoSistema" placeholder="Ex: Membrana acrílica estruturada">
+        <button class="btn btn-primary" id="btnAddSistema">Adicionar</button>
+      </div>
+
+      <div id="sistemasList">
+        <div class="loading">Carregando…</div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/push.js"></script>
+  <script src="/js/sistemas.js"></script>
+  <script src="/js/medidor.js"></script>
+  <script src="/js/orcamentista.js"></script>
+  <script src="/js/app.js"></script>
+
+</body>
+</html>

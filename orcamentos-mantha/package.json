@@ -1,0 +1,13 @@
+{
+  "name": "orcamentos-mantha",
+  "version": "1.0.0",
+  "description": "Sistema de orçamentos da Mantha Impermeabilização — medidor coleta em campo e orçamentista recebe notificação push",
+  "private": true,
+  "scripts": {
+    "gerar-vapid": "node -e \"const wp=require('web-push');const k=wp.generateVAPIDKeys();console.log('VAPID_PUBLIC_KEY=',k.publicKey);console.log('VAPID_PRIVATE_KEY=',k.privateKey);\""
+  },
+  "dependencies": {
+    "web-push": "^3.6.7",
+    "node-fetch": "^2.7.0"
+  }
+}
