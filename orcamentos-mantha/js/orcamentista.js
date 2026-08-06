@@ -86,6 +86,7 @@ const Orcamentista = {
           <h3>${escapeHtml(pav.nome)}</h3>
           ${pav.ambientes.map((amb, iAmb) => {
             const t = calcAmbienteTotal(amb);
+            const temPisosDetalhados = Array.isArray(amb.pisos) && amb.pisos.length;
             return `
               <div class="ambiente-view">
                 <div class="head">
@@ -98,7 +99,11 @@ const Orcamentista = {
                   <div><span class="k">Subtotal</span><span class="v">${fmtM2(t.subtotal)} m²</span></div>
                   <div><span class="k">Sobrep. ${amb.sobreposicao_pct || 0}%</span><span class="v">${fmtM2(t.sobreposicaoM2)} m²</span></div>
                 </div>
-                ${amb.paredes.length ? `
+                ${temPisosDetalhados ? `
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem">
+                    Pisos: ${amb.pisos.map(p => `${p.comprimento_m} × ${p.largura_m}m`).join(' + ')}
+                  </div>` : ''}
+                ${amb.paredes && amb.paredes.length ? `
                   <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem">
                     Paredes: ${amb.paredes.map(p => `${p.comprimento_m} × ${p.altura_m}m`).join(' + ')}
                   </div>` : ''}

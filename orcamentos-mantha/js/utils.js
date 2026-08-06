@@ -78,8 +78,19 @@ function hojeISO() {
 }
 
 // Calcula o total de m² de um ambiente
+// Suporta o formato novo (pisos como array) e o antigo (piso_m2 escalar)
 function calcAmbienteTotal(ambiente) {
-  const piso = Number(ambiente.piso_m2) || 0;
+  let piso = 0;
+  if (Array.isArray(ambiente.pisos) && ambiente.pisos.length) {
+    piso = ambiente.pisos.reduce(
+      (sum, p) => sum + (Number(p.comprimento_m) || 0) * (Number(p.largura_m) || 0),
+      0
+    );
+  } else if (ambiente.piso_m2) {
+    // fallback para medições antigas
+    piso = Number(ambiente.piso_m2) || 0;
+  }
+
   const paredes = (ambiente.paredes || []).reduce(
     (sum, p) => sum + (Number(p.comprimento_m) || 0) * (Number(p.altura_m) || 0),
     0
