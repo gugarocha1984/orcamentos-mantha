@@ -40,7 +40,7 @@ const Medidor = {
       id: gerarId(),
       descricao: '',
       sistema_id: '',
-      pisos: [{ id: gerarId(), comprimento_m: '', largura_m: '' }],
+      piso_m2: '',
       paredes: [{ id: gerarId(), comprimento_m: '', altura_m: '' }],
       sobreposicao_pct: 0,
       observacoes: ''
@@ -52,24 +52,6 @@ const Medidor = {
     const pav = this.estado.pavimentos.find(p => p.id === pavId);
     if (!pav) return;
     pav.ambientes = pav.ambientes.filter(a => a.id !== ambId);
-    this.renderizar();
-  },
-
-  // Pisos ------------------------------------------------------------------
-  addPiso(pavId, ambId) {
-    const amb = this.acharAmb(pavId, ambId);
-    if (!amb) return;
-    amb.pisos.push({ id: gerarId(), comprimento_m: '', largura_m: '' });
-    this.renderizar();
-  },
-
-  removerPiso(pavId, ambId, pisoId) {
-    const amb = this.acharAmb(pavId, ambId);
-    if (!amb) return;
-    amb.pisos = amb.pisos.filter(p => p.id !== pisoId);
-    if (amb.pisos.length === 0) {
-      amb.pisos.push({ id: gerarId(), comprimento_m: '', largura_m: '' });
-    }
     this.renderizar();
   },
 
@@ -109,16 +91,9 @@ const Medidor = {
         if (!ambEl) return;
         amb.descricao = ambEl.querySelector('.amb-descricao').value;
         amb.sistema_id = ambEl.querySelector('.amb-sistema').value;
+        amb.piso_m2 = ambEl.querySelector('.amb-piso').value;
         amb.sobreposicao_pct = ambEl.querySelector('.amb-sobreposicao').value;
         amb.observacoes = ambEl.querySelector('.amb-obs').value;
-
-        // pisos
-        amb.pisos.forEach(ps => {
-          const psEl = ambEl.querySelector(`[data-piso="${ps.id}"]`);
-          if (!psEl) return;
-          ps.comprimento_m = psEl.querySelector('.piso-comp').value;
-          ps.largura_m = psEl.querySelector('.piso-larg').value;
-        });
 
         // paredes
         amb.paredes.forEach(pr => {
@@ -178,21 +153,10 @@ const Medidor = {
             </div>
 
             <div class="field">
-              <label>Pisos (comprimento × largura)</label>
-              <div class="paredes-list">
-                ${amb.pisos.map(ps => `
-                  <div class="parede-row" data-piso="${ps.id}">
-                    <input type="number" step="0.01" min="0" class="piso-comp"
-                      placeholder="Comprimento (m)" value="${ps.comprimento_m}">
-                    <input type="number" step="0.01" min="0" class="piso-larg"
-                      placeholder="Largura (m)" value="${ps.largura_m}">
-                    <button type="button" class="remove-parede"
-                      data-rm-piso="${pav.id}|${amb.id}|${ps.id}" title="Remover piso">✕</button>
-                  </div>
-                `).join('')}
-              </div>
-              <button type="button" class="btn btn-ghost btn-sm mt-1"
-                data-add-piso="${pav.id}|${amb.id}">+ Adicionar piso</button>
+              <label>Piso (m²)</label>
+              <input type="number" step="0.01" min="0" class="amb-piso"
+                placeholder="0,00" value="${amb.piso_m2}">
+              <div class="hint">Digite a metragem quadrada total do piso (aceita qualquer formato: quadrado, triângulo, círculo, etc.).</div>
             </div>
 
             <div class="field">
@@ -217,7 +181,7 @@ const Medidor = {
               <label>Sobreposição (%)</label>
               <input type="number" step="0.01" min="0" class="amb-sobreposicao"
                 placeholder="0" value="${amb.sobreposicao_pct}">
-              <div class="hint">Percentual aplicado sobre o subtotal (pisos + paredes).</div>
+              <div class="hint">Percentual aplicado sobre o subtotal (piso + paredes).</div>
             </div>
 
             <div class="field">
@@ -272,23 +236,6 @@ const Medidor = {
       b.onclick = () => {
         this.coletarDoDOM();
         this.addAmbiente(b.dataset.addAmb);
-      };
-    });
-
-    // Pisos
-    document.querySelectorAll('[data-add-piso]').forEach(b => {
-      b.onclick = () => {
-        const [pavId, ambId] = b.dataset.addPiso.split('|');
-        this.coletarDoDOM();
-        this.addPiso(pavId, ambId);
-      };
-    });
-
-    document.querySelectorAll('[data-rm-piso]').forEach(b => {
-      b.onclick = () => {
-        const [pavId, ambId, psId] = b.dataset.rmPiso.split('|');
-        this.coletarDoDOM();
-        this.removerPiso(pavId, ambId, psId);
       };
     });
 
@@ -376,12 +323,7 @@ const Medidor = {
           descricao: amb.descricao.trim(),
           sistema_id: amb.sistema_id,
           sistema_nome: (Sistemas.cache.find(s => s.id === amb.sistema_id) || {}).nome || '',
-          pisos: amb.pisos
-            .filter(p => Number(p.comprimento_m) > 0 && Number(p.largura_m) > 0)
-            .map(p => ({
-              comprimento_m: Number(p.comprimento_m),
-              largura_m: Number(p.largura_m)
-            })),
+          piso_m2: Number(amb.piso_m2) || 0,
           paredes: amb.paredes
             .filter(p => Number(p.comprimento_m) > 0 && Number(p.altura_m) > 0)
             .map(p => ({
