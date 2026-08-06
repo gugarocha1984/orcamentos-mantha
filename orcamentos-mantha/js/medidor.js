@@ -1,19 +1,52 @@
 // ==========================================================================
 // medidor.js — formulário de nova medição (Arthur)
+// Suporta modo criação e modo edição (quando editandoId está setado)
 // ==========================================================================
 
 const Medidor = {
   estado: {
     pavimentos: []
   },
+  editandoId: null,
+  _dadosParaCarregar: null,
 
   reset() {
     this.estado = { pavimentos: [] };
+    this.editandoId = null;
+    this._dadosParaCarregar = null;
     document.getElementById('formMedicao').reset();
     document.getElementById('dataVisita').value = hojeISO();
     document.getElementById('pavimentosList').innerHTML = '';
     // Já cria um pavimento inicial
     this.addPavimento();
+  },
+
+  // Carrega uma medição existente para edição.
+  // Chamado por Orcamentista.editarMedicao antes de navegar para a tela.
+  carregarParaEdicao(medicao) {
+    this.editandoId = medicao.id;
+    // Deep copy pra não mutar a lista do orçamentista
+    const copia = JSON.parse(JSON.stringify(medicao));
+    // Garantir que pavimentos, ambientes e paredes tenham ids locais
+    (copia.pavimentos || []).forEach(pav => {
+      pav.id = pav.id || gerarId();
+      (pav.ambientes || []).forEach(amb => {
+        amb.id = amb.id || gerarId();
+        amb.paredes = amb.paredes || [];
+        amb.paredes.forEach(pr => { pr.id = pr.id || gerarId(); });
+        if (!amb.paredes.length) {
+          amb.paredes.push({ id: gerarId(), comprimento_m: '', altura_m: '' });
+        }
+      });
+    });
+    this.estado = { pavimentos: copia.pavimentos };
+    this._dadosParaCarregar = {
+      cliente: copia.cliente,
+      contato: copia.contato || '',
+      endereco: copia.endereco || '',
+      data_visita: copia.data_visita,
+      observacoes_gerais: copia.observacoes_gerais || ''
+    };
   },
 
   addPavimento(nome = '') {
@@ -306,9 +339,11 @@ const Medidor = {
     this.coletarDoDOM();
     if (!this.validar()) return;
 
+    const isEdicao = !!this.editandoId;
+    const idEditando = this.editandoId;
     const btn = document.getElementById('btnEnviar');
     btn.disabled = true;
-    btn.textContent = 'Enviando…';
+    btn.textContent = isEdicao ? 'Salvando…' : 'Enviando…';
 
     const payload = {
       cliente: document.getElementById('cliente').value.trim(),
@@ -337,28 +372,58 @@ const Medidor = {
     };
 
     try {
-      await api('/salvar-medicao', { method: 'POST', body: payload });
-      toast('Medição enviada! O orçamentista foi notificado.', 'success');
-      this.reset();
-      setTimeout(() => App.ir('home'), 1200);
+      if (isEdicao) {
+        await api('/medicao', { method: 'PATCH', body: { id: idEditando, medicao: payload } });
+        toast('Medição atualizada! O orçamentista foi notificado.', 'success');
+        this.reset();
+        setTimeout(() => App.ir('orcamentista'), 900);
+      } else {
+        await api('/salvar-medicao', { method: 'POST', body: payload });
+        toast('Medição enviada! O orçamentista foi notificado.', 'success');
+        this.reset();
+        setTimeout(() => App.ir('home'), 1200);
+      }
     } catch (e) {
-      toast('Erro ao enviar: ' + e.message, 'danger');
+      toast('Erro: ' + e.message, 'danger');
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Enviar para orçamento';
+      btn.textContent = isEdicao ? 'Salvar alterações' : 'Enviar para orçamento';
     }
   },
 
   async bindTela() {
     await Sistemas.carregar();
-    this.reset();
+
+    const titleEl = document.querySelector('#screen-medidor .screen-title');
+    const subEl = document.querySelector('#screen-medidor .screen-subtitle');
+    const btnEnviar = document.getElementById('btnEnviar');
+
+    if (this.editandoId) {
+      // Modo edição — não resetar, aplicar dados do cabeçalho e renderizar
+      const d = this._dadosParaCarregar || {};
+      document.getElementById('cliente').value = d.cliente || '';
+      document.getElementById('contato').value = d.contato || '';
+      document.getElementById('endereco').value = d.endereco || '';
+      document.getElementById('dataVisita').value = d.data_visita || '';
+      document.getElementById('obsGeral').value = d.observacoes_gerais || '';
+      this.renderizar();
+      if (titleEl) titleEl.textContent = 'Editar medição';
+      if (subEl) subEl.textContent = 'Ajuste os dados abaixo. Ao salvar, o orçamentista será notificado.';
+      if (btnEnviar) btnEnviar.textContent = 'Salvar alterações';
+    } else {
+      this.reset();
+      if (titleEl) titleEl.textContent = 'Nova medição';
+      if (subEl) subEl.textContent = 'Preencha os dados da obra e vá adicionando pavimentos e ambientes.';
+      if (btnEnviar) btnEnviar.textContent = 'Enviar para orçamento';
+    }
 
     document.getElementById('btnAddPavimento').onclick = () => {
       this.coletarDoDOM();
       this.addPavimento();
     };
     document.getElementById('btnCancelMedicao').onclick = () => {
-      if (confirm('Descartar a medição atual?')) {
+      const msg = this.editandoId ? 'Descartar as alterações?' : 'Descartar a medição atual?';
+      if (confirm(msg)) {
         this.reset();
         App.ir('home');
       }

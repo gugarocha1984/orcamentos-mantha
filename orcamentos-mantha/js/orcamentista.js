@@ -115,14 +115,29 @@ const Orcamentista = {
         </div>
       `).join('')}
 
-      <div class="action-bar">
+      <div class="action-bar" style="flex-wrap: wrap;">
+        <button class="btn btn-primary" data-editar style="flex: 1 1 45%;">Editar</button>
         ${m.status === 'orcado'
-          ? '<button class="btn btn-secondary" data-marcar="pendente">Marcar como pendente</button>'
-          : '<button class="btn btn-primary" data-marcar="orcado">Marcar como orçado</button>'}
-        <button class="btn btn-secondary" onclick="window.print()">Imprimir / PDF</button>
+          ? '<button class="btn btn-secondary" data-marcar="pendente" style="flex: 1 1 45%;">Marcar pendente</button>'
+          : '<button class="btn btn-secondary" data-marcar="orcado" style="flex: 1 1 45%;">Marcar orçado</button>'}
+        <button class="btn btn-secondary" onclick="window.print()" style="flex: 1 1 45%;">Imprimir / PDF</button>
+        <button class="btn btn-danger" data-excluir style="flex: 1 1 45%;">Excluir</button>
       </div>
     `;
 
+    // Handler: Editar
+    const btnEditar = container.querySelector('[data-editar]');
+    if (btnEditar) {
+      btnEditar.onclick = () => {
+        if (m.status === 'orcado') {
+          if (!confirm('Esta medição já foi marcada como orçada. Ao salvar as alterações, o status volta para pendente e o orçamento precisará ser refeito. Continuar?')) return;
+        }
+        Medidor.carregarParaEdicao(m);
+        App.ir('medidor');
+      };
+    }
+
+    // Handler: Marcar status
     const btnMarcar = container.querySelector('[data-marcar]');
     if (btnMarcar) {
       btnMarcar.onclick = async () => {
@@ -139,6 +154,24 @@ const Orcamentista = {
         } catch (e) {
           toast('Erro: ' + e.message, 'danger');
           btnMarcar.disabled = false;
+        }
+      };
+    }
+
+    // Handler: Excluir
+    const btnExcluir = container.querySelector('[data-excluir]');
+    if (btnExcluir) {
+      btnExcluir.onclick = async () => {
+        if (!confirm(`Excluir a medição de "${m.cliente}"?\n\nEsta ação não pode ser desfeita pelo app.`)) return;
+        btnExcluir.disabled = true;
+        try {
+          await api('/medicao', { method: 'DELETE', body: { id: m.id } });
+          toast('Medição excluída.', 'success');
+          this.medicoes = this.medicoes.filter(x => x.id !== m.id);
+          setTimeout(() => App.ir('orcamentista'), 700);
+        } catch (e) {
+          toast('Erro ao excluir: ' + e.message, 'danger');
+          btnExcluir.disabled = false;
         }
       };
     }
