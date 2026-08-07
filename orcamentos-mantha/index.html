@@ -17,7 +17,10 @@
       <div class="brand">Mantha</div>
       <div class="subtitle">Orçamentos</div>
     </div>
-    <button class="back-btn" id="btnBack" style="display:none" aria-label="Voltar">&larr;</button>
+    <div style="display:flex; align-items:center; gap:0.5rem;">
+      <button class="back-btn" id="btnBack" style="display:none" aria-label="Voltar">&larr;</button>
+      <button class="icon-btn" id="btnSistemas" aria-label="Cadastro de sistemas" title="Cadastro de sistemas">⚙</button>
+    </div>
   </header>
 
   <main>
@@ -36,20 +39,20 @@
           <div class="arrow">→</div>
         </button>
 
-        <button class="menu-card" data-goto="orcamentista">
-          <div class="icon accent">📋</div>
+        <button class="menu-card" data-goto="precificar">
+          <div class="icon accent">💰</div>
           <div class="info">
-            <h3>Medições recebidas</h3>
-            <p>Elaborar orçamentos pendentes</p>
+            <h3>Precificar</h3>
+            <p>Definir valores das medições</p>
           </div>
           <div class="arrow">→</div>
         </button>
 
-        <button class="menu-card" data-goto="sistemas">
-          <div class="icon">⚙️</div>
+        <button class="menu-card" data-goto="orcamentista">
+          <div class="icon">📋</div>
           <div class="info">
-            <h3>Sistemas de impermeabilização</h3>
-            <p>Cadastrar e editar</p>
+            <h3>Medições recebidas</h3>
+            <p>Elaborar orçamentos comerciais</p>
           </div>
           <div class="arrow">→</div>
         </button>
@@ -57,14 +60,13 @@
     </section>
 
     <!-- =========================================================
-         TELA: Medidor — nova medição
+         TELA: Medidor — nova medição / edição
          ========================================================= -->
     <section id="screen-medidor" class="screen">
       <h1 class="screen-title">Nova medição</h1>
       <p class="screen-subtitle">Preencha os dados da obra e vá adicionando pavimentos e ambientes.</p>
 
       <form id="formMedicao">
-
         <div class="card">
           <div class="card-title">Dados da obra</div>
           <div class="field">
@@ -99,24 +101,33 @@
 
         <div class="action-bar">
           <button type="button" class="btn btn-secondary" id="btnCancelMedicao">Cancelar</button>
-          <button type="submit" class="btn btn-primary" id="btnEnviar">Enviar para orçamento</button>
+          <button type="submit" class="btn btn-primary" id="btnEnviar">Enviar para precificação</button>
         </div>
-
       </form>
     </section>
 
     <!-- =========================================================
-         TELA: Orçamentista — lista de medições
+         TELA: Precificar — Gustavo
+         ========================================================= -->
+    <section id="screen-precificar" class="screen">
+      <div id="precificarConteudo">
+        <h1 class="screen-title">Precificar</h1>
+        <p class="screen-subtitle">Medições aguardando definição de valores.</p>
+
+        <div id="pushBannerPrecificar" style="display:none"></div>
+        <div id="precificarLista"><div class="loading">Carregando…</div></div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         TELA: Orçamentista — Anne
          ========================================================= -->
     <section id="screen-orcamentista" class="screen">
       <h1 class="screen-title">Medições recebidas</h1>
-      <p class="screen-subtitle">Lista de solicitações do Arthur para elaborar orçamento.</p>
+      <p class="screen-subtitle">Medições precificadas prontas para elaboração da proposta comercial.</p>
 
       <div id="pushBanner" style="display:none"></div>
-
-      <div id="medicoesList">
-        <div class="loading">Carregando…</div>
-      </div>
+      <div id="medicoesList"><div class="loading">Carregando…</div></div>
     </section>
 
     <!-- =========================================================
@@ -127,20 +138,26 @@
     </section>
 
     <!-- =========================================================
-         TELA: Sistemas
+         TELA: Sistemas (via engrenagem)
          ========================================================= -->
     <section id="screen-sistemas" class="screen">
       <h1 class="screen-title">Sistemas</h1>
-      <p class="screen-subtitle">Adicione os sistemas de impermeabilização que a Mantha utiliza.</p>
+      <p class="screen-subtitle">Sistemas de impermeabilização cadastrados. O preço padrão é opcional e pré-preenche a precificação.</p>
 
-      <div class="sistema-form">
-        <input type="text" id="novoSistema" placeholder="Ex: Membrana acrílica estruturada">
-        <button class="btn btn-primary" id="btnAddSistema">Adicionar</button>
+      <div class="card">
+        <div class="card-title">Adicionar sistema</div>
+        <div class="field">
+          <label for="novoSistema">Nome</label>
+          <input type="text" id="novoSistema" placeholder="Ex: Membrana acrílica estruturada">
+        </div>
+        <div class="field">
+          <label for="novoPrecoPadrao">Preço padrão (R$/m²) — opcional</label>
+          <input type="number" step="0.01" min="0" id="novoPrecoPadrao" placeholder="0,00">
+        </div>
+        <button class="btn btn-primary btn-block" id="btnAddSistema">Adicionar</button>
       </div>
 
-      <div id="sistemasList">
-        <div class="loading">Carregando…</div>
-      </div>
+      <div id="sistemasList"><div class="loading">Carregando…</div></div>
     </section>
 
   </main>
@@ -151,6 +168,7 @@
   <script src="/js/push.js"></script>
   <script src="/js/sistemas.js"></script>
   <script src="/js/medidor.js"></script>
+  <script src="/js/precificar.js"></script>
   <script src="/js/orcamentista.js"></script>
   <script src="/js/app.js"></script>
 
