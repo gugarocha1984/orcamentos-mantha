@@ -30,6 +30,8 @@
   --danger-soft: #FEF2F2;
   --warning: #D97706;
   --warning-soft: #FFFBEB;
+  --info: #0284C7;
+  --info-soft: #E0F2FE;
 
   /* Escala */
   --radius-sm: 6px;
@@ -59,10 +61,7 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* ==========================================================================
-   Cabeçalho
-   ========================================================================== */
-
+/* Cabeçalho */
 .app-header {
   background: var(--primary);
   color: #FFFFFF;
@@ -108,22 +107,20 @@ body {
   text-transform: uppercase;
 }
 
-.back-btn {
+.back-btn, .icon-btn {
   background: transparent;
   border: none;
   color: #FFFFFF;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
+  padding: 0.35rem 0.6rem;
   border-radius: var(--radius-sm);
   transition: background 0.15s;
+  line-height: 1;
 }
-.back-btn:hover { background: rgba(255,255,255,0.1); }
+.back-btn:hover, .icon-btn:hover { background: rgba(255,255,255,0.12); }
 
-/* ==========================================================================
-   Container principal
-   ========================================================================== */
-
+/* Container principal */
 main {
   max-width: 900px;
   margin: 0 auto;
@@ -138,10 +135,7 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================================================
-   Home — menu principal
-   ========================================================================== */
-
+/* Home — menu principal */
 .home-menu {
   display: grid;
   gap: 1rem;
@@ -200,10 +194,7 @@ main {
   font-size: 1.25rem;
 }
 
-/* ==========================================================================
-   Títulos e headings de tela
-   ========================================================================== */
-
+/* Títulos e headings de tela */
 .screen-title {
   font-size: 1.5rem;
   font-weight: 800;
@@ -217,10 +208,7 @@ main {
   margin-bottom: 1.5rem;
 }
 
-/* ==========================================================================
-   Formulários
-   ========================================================================== */
-
+/* Formulários */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -242,10 +230,7 @@ main {
   justify-content: space-between;
 }
 
-.field {
-  margin-bottom: 1rem;
-}
-
+.field { margin-bottom: 1rem; }
 .field:last-child { margin-bottom: 0; }
 
 .field label {
@@ -262,13 +247,8 @@ main {
   margin-top: 0.3rem;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="email"],
-input[type="tel"],
-input[type="date"],
-textarea,
-select {
+input[type="text"], input[type="number"], input[type="email"],
+input[type="tel"], input[type="date"], textarea, select {
   width: 100%;
   padding: 0.7rem 0.85rem;
   border: 1px solid var(--border-strong);
@@ -290,21 +270,13 @@ input:focus, textarea:focus, select:focus {
 
 textarea { min-height: 80px; resize: vertical; }
 
-.row {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: 1fr;
-}
-
+.row { display: grid; gap: 0.75rem; grid-template-columns: 1fr; }
 @media (min-width: 520px) {
   .row.two { grid-template-columns: 1fr 1fr; }
   .row.three { grid-template-columns: 1fr 1fr 1fr; }
 }
 
-/* ==========================================================================
-   Botões
-   ========================================================================== */
-
+/* Botões */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -321,10 +293,7 @@ textarea { min-height: 80px; resize: vertical; }
   text-decoration: none;
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: #FFFFFF;
-}
+.btn-primary { background: var(--primary); color: #FFFFFF; }
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -335,28 +304,17 @@ textarea { min-height: 80px; resize: vertical; }
 }
 .btn-secondary:hover { background: var(--surface-alt); border-color: var(--primary); }
 
-.btn-danger {
-  background: var(--danger-soft);
-  color: var(--danger);
-  border-color: transparent;
-}
+.btn-danger { background: var(--danger-soft); color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: #FFFFFF; }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--primary);
-  border-color: transparent;
-}
+.btn-ghost { background: transparent; color: var(--primary); }
 .btn-ghost:hover { background: var(--primary-soft); }
 
 .btn-block { width: 100%; }
 .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
 .btn-lg { padding: 1rem 1.5rem; font-size: 1rem; }
 
-/* ==========================================================================
-   Pavimentos e ambientes (formulário do medidor)
-   ========================================================================== */
-
+/* Pavimentos e ambientes (formulário do medidor) */
 .pavimento {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -395,7 +353,6 @@ textarea { min-height: 80px; resize: vertical; }
   padding: 1rem;
   margin-bottom: 0.75rem;
 }
-
 .ambiente:last-child { margin-bottom: 1rem; }
 
 .ambiente-header {
@@ -425,10 +382,7 @@ textarea { min-height: 80px; resize: vertical; }
   align-items: center;
 }
 
-.parede-row input {
-  padding: 0.5rem 0.65rem;
-  font-size: 0.9rem;
-}
+.parede-row input { padding: 0.5rem 0.65rem; font-size: 0.9rem; }
 
 .parede-row .remove-parede {
   background: transparent;
@@ -443,7 +397,6 @@ textarea { min-height: 80px; resize: vertical; }
   align-items: center;
   justify-content: center;
 }
-
 .parede-row .remove-parede:hover { border-color: var(--danger); color: var(--danger); }
 
 .ambiente-total {
@@ -456,10 +409,7 @@ textarea { min-height: 80px; resize: vertical; }
   font-size: 0.85rem;
 }
 
-.ambiente-total .label {
-  color: var(--text-muted);
-  font-weight: 600;
-}
+.ambiente-total .label { color: var(--text-muted); font-weight: 600; }
 
 .ambiente-total .value {
   font-family: var(--font-mono);
@@ -468,10 +418,7 @@ textarea { min-height: 80px; resize: vertical; }
   font-size: 1.1rem;
 }
 
-/* ==========================================================================
-   Lista de medições (orçamentista)
-   ========================================================================== */
-
+/* Lista de medições */
 .medicao-item {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -517,15 +464,14 @@ textarea { min-height: 80px; resize: vertical; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
-.badge-pendente { background: var(--warning-soft); color: var(--warning); }
+.badge-aguardando-precificacao { background: var(--warning-soft); color: var(--warning); }
+.badge-aguardando-orcamento { background: var(--info-soft); color: var(--info); }
 .badge-orcado { background: var(--success-soft); color: var(--success); }
 
-/* ==========================================================================
-   Detalhe da medição (visualização do orçamentista)
-   ========================================================================== */
-
+/* Detalhe da medição */
 .resumo-obra {
   background: var(--primary);
   color: #FFFFFF;
@@ -585,10 +531,7 @@ textarea { min-height: 80px; resize: vertical; }
   border-bottom: 2px solid var(--primary);
 }
 
-.ambiente-view {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
-}
+.ambiente-view { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
 .ambiente-view:last-child { border-bottom: none; }
 
 .ambiente-view .head {
@@ -599,16 +542,8 @@ textarea { min-height: 80px; resize: vertical; }
   gap: 0.75rem;
 }
 
-.ambiente-view .desc {
-  font-weight: 700;
-  font-size: 0.95rem;
-}
-
-.ambiente-view .sistema {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 0.4rem;
-}
+.ambiente-view .desc { font-weight: 700; font-size: 0.95rem; }
+.ambiente-view .sistema { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
 
 .ambiente-view .medidas {
   display: grid;
@@ -635,6 +570,7 @@ textarea { min-height: 80px; resize: vertical; }
   font-size: 0.9rem;
   font-weight: 700;
 }
+
 .ambiente-view .total .value {
   font-family: var(--font-mono);
   color: var(--primary);
@@ -642,10 +578,141 @@ textarea { min-height: 80px; resize: vertical; }
   margin-left: 0.5rem;
 }
 
-/* ==========================================================================
-   Sistemas
-   ========================================================================== */
+/* Precificação — cards por sistema */
+.sistema-preco-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
 
+.sistema-preco-card .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.sistema-preco-card .nome {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.sistema-preco-card .metragem {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.sistema-preco-card .campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.sistema-preco-card .subtotal-linha {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.sistema-preco-card .subtotal-linha .val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.total-precificacao {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.total-precificacao .label { opacity: 0.85; font-size: 0.95rem; font-weight: 600; }
+
+.total-precificacao .value {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: var(--accent);
+}
+
+/* Bloco de resumo comercial (mostrado após precificação) */
+.resumo-comercial {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.resumo-comercial h4 {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.resumo-comercial .linha {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 0.9rem;
+}
+.resumo-comercial .linha:last-of-type { border-bottom: none; }
+
+.resumo-comercial .linha .v {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.resumo-comercial .total-linha {
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--primary);
+  display: flex;
+  justify-content: space-between;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.resumo-comercial .total-linha .v {
+  font-family: var(--font-mono);
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.resumo-comercial .condicao {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.resumo-comercial .condicao .k {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+/* Sistemas */
 .sistema-item {
   display: flex;
   align-items: center;
@@ -655,22 +722,19 @@ textarea { min-height: 80px; resize: vertical; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   margin-bottom: 0.5rem;
+  gap: 0.75rem;
 }
 
+.sistema-item .info { flex: 1; min-width: 0; }
 .sistema-item .nome { font-weight: 600; font-size: 0.95rem; }
-
-.sistema-form {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
+.sistema-item .preco {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
 }
 
-.sistema-form input { flex: 1; }
-
-/* ==========================================================================
-   Estado vazio, loading, mensagens
-   ========================================================================== */
-
+/* Estados vazios, loading, toast */
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
@@ -691,11 +755,7 @@ textarea { min-height: 80px; resize: vertical; }
 
 .empty-state p { font-size: 0.9rem; }
 
-.loading {
-  text-align: center;
-  padding: 2rem;
-  color: var(--text-muted);
-}
+.loading { text-align: center; padding: 2rem; color: var(--text-muted); }
 
 .toast {
   position: fixed;
@@ -720,10 +780,7 @@ textarea { min-height: 80px; resize: vertical; }
 .toast.success { background: var(--success); }
 .toast.danger { background: var(--danger); }
 
-/* ==========================================================================
-   Barra fixa inferior de ações
-   ========================================================================== */
-
+/* Action bar */
 .action-bar {
   position: sticky;
   bottom: 0;
@@ -733,16 +790,14 @@ textarea { min-height: 80px; resize: vertical; }
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   display: flex;
   gap: 0.75rem;
+  flex-wrap: wrap;
   margin: 1.5rem -1.25rem -1.25rem;
   box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
 }
 
-.action-bar .btn { flex: 1; }
+.action-bar .btn { flex: 1 1 45%; min-width: 0; }
 
-/* ==========================================================================
-   Notificações (banner de habilitação)
-   ========================================================================== */
-
+/* Push banner */
 .push-banner {
   background: var(--accent);
   color: var(--primary);
@@ -770,10 +825,7 @@ textarea { min-height: 80px; resize: vertical; }
   flex-shrink: 0;
 }
 
-/* ==========================================================================
-   Utilitários
-   ========================================================================== */
-
+/* Utilitários */
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }
 .mt-3 { margin-top: 1.5rem; }
@@ -786,15 +838,18 @@ textarea { min-height: 80px; resize: vertical; }
 .text-right { text-align: right; }
 .text-center { text-align: center; }
 
-/* Ajustes para telas maiores */
 @media (min-width: 640px) {
   main { padding: 2rem; }
   .app-header { padding: 1.25rem 2rem; }
   .home-menu { grid-template-columns: 1fr 1fr; }
+  .home-menu .menu-card:first-child { grid-column: 1 / -1; }
 }
 
 @media print {
   .app-header, .action-bar, .btn, .push-banner { display: none !important; }
   body { background: white; }
-  .card, .pavimento-view, .resumo-obra { box-shadow: none; border: 1px solid #ccc; }
+  .card, .pavimento-view, .resumo-obra, .resumo-comercial { box-shadow: none; border: 1px solid #ccc; }
+  .resumo-obra, .total-precificacao { background: white !important; color: black !important; border: 2px solid #333; }
+  .resumo-obra h2, .resumo-obra .total-geral .value,
+  .total-precificacao .value { color: black !important; }
 }
