@@ -19,7 +19,7 @@ exports.handler = async (event) => {
       return { statusCode: 404, body: JSON.stringify({ error: 'Medição não encontrada' }) };
     }
 
-    // ============ DELETE ============
+    // DELETE
     if (event.httpMethod === 'DELETE') {
       const removida = medicoes.splice(idx, 1)[0];
       await escreverJSON('medicoes.json', medicoes, sha, `Excluída: ${removida.cliente}`);
@@ -30,28 +30,28 @@ exports.handler = async (event) => {
       };
     }
 
-    // ============ PATCH (status ou medicao completa) ============
+    // PATCH
     if (event.httpMethod === 'PATCH' || event.httpMethod === 'POST') {
 
-      // Edição completa: payload.medicao contém o objeto todo
+      // Edição completa da medição
       if (payload.medicao && typeof payload.medicao === 'object') {
         const antiga = medicoes[idx];
         const nova = {
           ...payload.medicao,
-          id: antiga.id,                       // preserva id
-          criado_em: antiga.criado_em,         // preserva data de criação
-          status: 'pendente',                  // volta para pendente ao editar
+          id: antiga.id,
+          criado_em: antiga.criado_em,
+          status: 'aguardando_precificacao',   // qualquer edição volta o fluxo
+          precificacao: null,                   // limpa a precificação anterior
           atualizado_em: new Date().toISOString()
         };
         medicoes[idx] = nova;
         await escreverJSON('medicoes.json', medicoes, sha, `Editada: ${nova.cliente}`);
 
-        // Notifica orçamentista da atualização
         try {
           await enviarParaTodos({
-            title: 'Medição atualizada pelo Arthur',
-            body: `${nova.cliente} — revise o orçamento`,
-            url: '/#orcamentista'
+            title: 'Medição editada pelo Arthur',
+            body: `${nova.cliente} — precisa ser precificada novamente`,
+            url: '/#precificar'
           });
         } catch (e) {
           console.warn('Push falhou:', e.message);
@@ -65,8 +65,10 @@ exports.handler = async (event) => {
       }
 
       // Só status
-      if (payload.status && ['pendente', 'orcado'].includes(payload.status)) {
-        medicoes[idx].status = payload.status;
+      if (payload.status && ['aguardando_precificacao', 'aguardando_orcamento', 'orcado', 'pendente'].includes(payload.status)) {
+        // Compatibilidade: 'pendente' antigo vira 'aguardando_precificacao'
+        const novoStatus = payload.status === 'pendente' ? 'aguardando_precificacao' : payload.status;
+        medicoes[idx].status = novoStatus;
         medicoes[idx].atualizado_em = new Date().toISOString();
         await escreverJSON('medicoes.json', medicoes, sha, `Status: ${medicoes[idx].cliente}`);
         return {

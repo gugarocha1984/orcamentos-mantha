@@ -19,7 +19,7 @@ exports.handler = async (event) => {
   const medicao = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     criado_em: new Date().toISOString(),
-    status: 'pendente',
+    status: 'aguardando_precificacao',
     cliente: payload.cliente,
     contato: payload.contato || '',
     endereco: payload.endereco || '',
@@ -34,13 +34,12 @@ exports.handler = async (event) => {
     medicoes.push(medicao);
     await escreverJSON('medicoes.json', medicoes, sha, `Nova medição: ${medicao.cliente}`);
 
-    // Dispara notificação push (não bloqueia a resposta se falhar)
     let pushInfo = null;
     try {
       pushInfo = await enviarParaTodos({
         title: 'Nova medição do Arthur',
-        body: `${medicao.cliente} — ${medicao.pavimentos.length} pavimento(s)`,
-        url: '/#orcamentista'
+        body: `${medicao.cliente} — aguardando precificação`,
+        url: '/#precificar'
       });
     } catch (e) {
       console.warn('Falha ao disparar push:', e.message);
