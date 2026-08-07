@@ -1,12 +1,9 @@
 // ==========================================================================
 // medidor.js — formulário de nova medição (Arthur)
-// Suporta modo criação e modo edição (quando editandoId está setado)
 // ==========================================================================
 
 const Medidor = {
-  estado: {
-    pavimentos: []
-  },
+  estado: { pavimentos: [] },
   editandoId: null,
   _dadosParaCarregar: null,
 
@@ -17,17 +14,12 @@ const Medidor = {
     document.getElementById('formMedicao').reset();
     document.getElementById('dataVisita').value = hojeISO();
     document.getElementById('pavimentosList').innerHTML = '';
-    // Já cria um pavimento inicial
     this.addPavimento();
   },
 
-  // Carrega uma medição existente para edição.
-  // Chamado por Orcamentista.editarMedicao antes de navegar para a tela.
   carregarParaEdicao(medicao) {
     this.editandoId = medicao.id;
-    // Deep copy pra não mutar a lista do orçamentista
     const copia = JSON.parse(JSON.stringify(medicao));
-    // Garantir que pavimentos, ambientes e paredes tenham ids locais
     (copia.pavimentos || []).forEach(pav => {
       pav.id = pav.id || gerarId();
       (pav.ambientes || []).forEach(amb => {
@@ -50,14 +42,9 @@ const Medidor = {
   },
 
   addPavimento(nome = '') {
-    const pav = {
-      id: gerarId(),
-      nome,
-      ambientes: []
-    };
+    const pav = { id: gerarId(), nome, ambientes: [] };
     this.estado.pavimentos.push(pav);
     this.renderizar();
-    // Adiciona um ambiente inicial para não deixar vazio
     this.addAmbiente(pav.id);
   },
 
@@ -88,7 +75,6 @@ const Medidor = {
     this.renderizar();
   },
 
-  // Paredes ----------------------------------------------------------------
   addParede(pavId, ambId) {
     const amb = this.acharAmb(pavId, ambId);
     if (!amb) return;
@@ -112,7 +98,6 @@ const Medidor = {
   },
 
   coletarDoDOM() {
-    // Lê os inputs do DOM e atualiza this.estado antes de re-renderizar ou salvar
     this.estado.pavimentos.forEach(pav => {
       const pavEl = document.querySelector(`[data-pav="${pav.id}"]`);
       if (!pavEl) return;
@@ -128,7 +113,6 @@ const Medidor = {
         amb.sobreposicao_pct = ambEl.querySelector('.amb-sobreposicao').value;
         amb.observacoes = ambEl.querySelector('.amb-obs').value;
 
-        // paredes
         amb.paredes.forEach(pr => {
           const prEl = ambEl.querySelector(`[data-parede="${pr.id}"]`);
           if (!prEl) return;
@@ -182,7 +166,7 @@ const Medidor = {
                   </option>
                 `).join('')}
               </select>
-              ${sistemas.length === 0 ? '<div class="hint">Nenhum sistema cadastrado. Cadastre em "Sistemas" antes de enviar.</div>' : ''}
+              ${sistemas.length === 0 ? '<div class="hint">Nenhum sistema cadastrado. Cadastre em Sistemas (engrenagem) antes de enviar.</div>' : ''}
             </div>
 
             <div class="field">
@@ -239,16 +223,13 @@ const Medidor = {
   },
 
   bindLinhas() {
-    // Inputs: atualizam o estado on input (para não perder ao re-renderizar)
     document.querySelectorAll('[data-amb] input, [data-amb] select, [data-amb] textarea, .pav-nome').forEach(inp => {
       inp.addEventListener('input', debounce(() => {
         this.coletarDoDOM();
-        // re-renderiza apenas para atualizar totais
         this.atualizarTotais();
       }, 250));
     });
 
-    // Botões
     document.querySelectorAll('[data-rm-pav]').forEach(b => {
       b.onclick = () => {
         if (!confirm('Remover este pavimento e todos os seus ambientes?')) return;
@@ -272,7 +253,6 @@ const Medidor = {
       };
     });
 
-    // Paredes
     document.querySelectorAll('[data-add-parede]').forEach(b => {
       b.onclick = () => {
         const [pavId, ambId] = b.dataset.addParede.split('|');
@@ -291,7 +271,6 @@ const Medidor = {
   },
 
   atualizarTotais() {
-    // Sem re-renderizar tudo, só atualiza as caixas de total
     this.estado.pavimentos.forEach(pav => {
       pav.ambientes.forEach(amb => {
         const totais = calcAmbienteTotal(amb);
@@ -374,12 +353,12 @@ const Medidor = {
     try {
       if (isEdicao) {
         await api('/medicao', { method: 'PATCH', body: { id: idEditando, medicao: payload } });
-        toast('Medição atualizada! O orçamentista foi notificado.', 'success');
+        toast('Medição atualizada!', 'success');
         this.reset();
-        setTimeout(() => App.ir('orcamentista'), 900);
+        setTimeout(() => App.ir('home'), 900);
       } else {
         await api('/salvar-medicao', { method: 'POST', body: payload });
-        toast('Medição enviada! O orçamentista foi notificado.', 'success');
+        toast('Medição enviada para precificação!', 'success');
         this.reset();
         setTimeout(() => App.ir('home'), 1200);
       }
@@ -387,7 +366,7 @@ const Medidor = {
       toast('Erro: ' + e.message, 'danger');
     } finally {
       btn.disabled = false;
-      btn.textContent = isEdicao ? 'Salvar alterações' : 'Enviar para orçamento';
+      btn.textContent = isEdicao ? 'Salvar alterações' : 'Enviar para precificação';
     }
   },
 
@@ -399,7 +378,6 @@ const Medidor = {
     const btnEnviar = document.getElementById('btnEnviar');
 
     if (this.editandoId) {
-      // Modo edição — não resetar, aplicar dados do cabeçalho e renderizar
       const d = this._dadosParaCarregar || {};
       document.getElementById('cliente').value = d.cliente || '';
       document.getElementById('contato').value = d.contato || '';
@@ -408,13 +386,13 @@ const Medidor = {
       document.getElementById('obsGeral').value = d.observacoes_gerais || '';
       this.renderizar();
       if (titleEl) titleEl.textContent = 'Editar medição';
-      if (subEl) subEl.textContent = 'Ajuste os dados abaixo. Ao salvar, o orçamentista será notificado.';
+      if (subEl) subEl.textContent = 'Ajuste os dados abaixo. Ao salvar, o status volta para aguardando precificação.';
       if (btnEnviar) btnEnviar.textContent = 'Salvar alterações';
     } else {
       this.reset();
       if (titleEl) titleEl.textContent = 'Nova medição';
       if (subEl) subEl.textContent = 'Preencha os dados da obra e vá adicionando pavimentos e ambientes.';
-      if (btnEnviar) btnEnviar.textContent = 'Enviar para orçamento';
+      if (btnEnviar) btnEnviar.textContent = 'Enviar para precificação';
     }
 
     document.getElementById('btnAddPavimento').onclick = () => {

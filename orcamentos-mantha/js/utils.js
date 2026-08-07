@@ -4,7 +4,6 @@
 
 const API = '/api';
 
-// Chamada à API com JSON automático
 async function api(path, options = {}) {
   const opts = {
     ...options,
@@ -29,7 +28,6 @@ async function api(path, options = {}) {
   return data;
 }
 
-// Toast simples
 function toast(msg, tipo = '') {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -38,21 +36,20 @@ function toast(msg, tipo = '') {
   toast._t = setTimeout(() => el.classList.remove('show'), 3200);
 }
 
-// Formatação de número em m²
 function fmtM2(n) {
   const v = Number(n) || 0;
-  return v.toLocaleString('pt-BR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// Gera ID simples baseado em timestamp
+function fmtBRL(n) {
+  const v = Number(n) || 0;
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 function gerarId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-// Debounce simples
 function debounce(fn, ms = 300) {
   let t;
   return (...args) => {
@@ -61,14 +58,12 @@ function debounce(fn, ms = 300) {
   };
 }
 
-// Formata data ISO para dd/mm/aaaa
 function fmtData(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
   return `${d}/${m}/${y}`;
 }
 
-// Data de hoje em ISO (YYYY-MM-DD)
 function hojeISO() {
   const d = new Date();
   const y = d.getFullYear();
@@ -78,7 +73,6 @@ function hojeISO() {
 }
 
 // Calcula o total de m² de um ambiente
-// Suporta o formato novo (pisos como array) e o antigo (piso_m2 escalar)
 function calcAmbienteTotal(ambiente) {
   let piso = 0;
   if (Array.isArray(ambiente.pisos) && ambiente.pisos.length) {
@@ -87,7 +81,6 @@ function calcAmbienteTotal(ambiente) {
       0
     );
   } else if (ambiente.piso_m2) {
-    // fallback para medições antigas
     piso = Number(ambiente.piso_m2) || 0;
   }
 
@@ -99,15 +92,11 @@ function calcAmbienteTotal(ambiente) {
   const sobreposicaoPct = Number(ambiente.sobreposicao_pct) || 0;
   const sobreposicaoM2 = subtotal * (sobreposicaoPct / 100);
   return {
-    piso,
-    paredes,
-    subtotal,
-    sobreposicaoM2,
+    piso, paredes, subtotal, sobreposicaoM2,
     total: subtotal + sobreposicaoM2
   };
 }
 
-// Total geral de uma medição
 function calcMedicaoTotal(medicao) {
   let total = 0;
   (medicao.pavimentos || []).forEach(pav => {
@@ -116,4 +105,46 @@ function calcMedicaoTotal(medicao) {
     });
   });
   return total;
+}
+
+// Agrupa m² por sistema para a tela de precificação
+// Retorna: [{ sistema_id, sistema_nome, m2_total }]
+function agruparPorSistema(medicao) {
+  const mapa = new Map();
+  (medicao.pavimentos || []).forEach(pav => {
+    (pav.ambientes || []).forEach(amb => {
+      const id = amb.sistema_id || 'sem-sistema';
+      const nome = amb.sistema_nome || 'Sem sistema';
+      const totaisAmb = calcAmbienteTotal(amb);
+      if (!mapa.has(id)) {
+        mapa.set(id, { sistema_id: id, sistema_nome: nome, m2_total: 0 });
+      }
+      mapa.get(id).m2_total += totaisAmb.total;
+    });
+  });
+  return Array.from(mapa.values());
+}
+
+// Normaliza o status (compatibilidade com nomes antigos)
+function normalizarStatus(s) {
+  if (s === 'pendente') return 'aguardando_precificacao';
+  return s || 'aguardando_precificacao';
+}
+
+// Retorna badge HTML para status
+function badgeStatus(status) {
+  const s = normalizarStatus(status);
+  const mapa = {
+    'aguardando_precificacao': ['badge-aguardando-precificacao', 'Aguardando precificação'],
+    'aguardando_orcamento': ['badge-aguardando-orcamento', 'Aguardando orçamento'],
+    'orcado': ['badge-orcado', 'Orçado']
+  };
+  const [cls, txt] = mapa[s] || mapa['aguardando_precificacao'];
+  return `<span class="badge ${cls}">${txt}</span>`;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
 }
