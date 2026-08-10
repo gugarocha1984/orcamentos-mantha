@@ -20,10 +20,46 @@ const App = {
     document.getElementById('btnSistemas').style.display = tela === 'home' ? 'inline-block' : 'none';
     window.scrollTo({ top: 0, behavior: 'instant' });
 
+    if (tela === 'home') this.atualizarContadores();
     if (tela === 'medidor') Medidor.bindTela();
     if (tela === 'precificar') Precificar.bindTela();
     if (tela === 'orcamentista') Orcamentista.bindTela();
     if (tela === 'sistemas') { Sistemas.bindTela(); Sistemas.renderizarTela(); }
+  },
+
+  // Atualiza os badges de contagem nos cards da home
+  async atualizarContadores() {
+    try {
+      const r = await api('/listar-medicoes');
+      const medicoes = r.medicoes || [];
+
+      const precificar = medicoes.filter(m =>
+        normalizarStatus(m.status) === 'aguardando_precificacao'
+      ).length;
+
+      const orcamento = medicoes.filter(m =>
+        normalizarStatus(m.status) === 'aguardando_orcamento'
+      ).length;
+
+      this.setBadge('badgePrecificar', precificar);
+      this.setBadge('badgeOrcamentos', orcamento);
+    } catch (e) {
+      console.warn('Falha ao atualizar contadores da home:', e);
+      // Em caso de erro, esconde os badges pra não mostrar número errado
+      this.setBadge('badgePrecificar', 0);
+      this.setBadge('badgeOrcamentos', 0);
+    }
+  },
+
+  setBadge(id, count) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (count > 0) {
+      el.textContent = count > 99 ? '99+' : String(count);
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
   },
 
   init() {
