@@ -6,7 +6,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Paleta */
   --bg: #FAFAF7;
   --surface: #FFFFFF;
   --surface-alt: #F5F5F0;
@@ -33,7 +32,6 @@
   --info: #0284C7;
   --info-soft: #E0F2FE;
 
-  /* Escala */
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 14px;
@@ -47,7 +45,6 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -61,7 +58,6 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Cabeçalho */
 .app-header {
   background: var(--primary);
   color: #FFFFFF;
@@ -120,7 +116,6 @@ body {
 }
 .back-btn:hover, .icon-btn:hover { background: rgba(255,255,255,0.12); }
 
-/* Container principal */
 main {
   max-width: 900px;
   margin: 0 auto;
@@ -135,7 +130,6 @@ main {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Home — menu principal */
 .home-menu {
   display: grid;
   gap: 1rem;
@@ -168,6 +162,7 @@ main {
 }
 
 .menu-card .icon {
+  position: relative;   /* pra ancorar o badge de contador */
   width: 52px;
   height: 52px;
   border-radius: var(--radius);
@@ -194,7 +189,36 @@ main {
   font-size: 1.25rem;
 }
 
-/* Títulos e headings de tela */
+/* Badge de contador nos cards da home (estilo notificação de app) */
+.badge-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--danger);
+  color: #FFFFFF;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface);
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+.badge-count.hidden { display: none; }
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
 .screen-title {
   font-size: 1.5rem;
   font-weight: 800;
@@ -208,7 +232,6 @@ main {
   margin-bottom: 1.5rem;
 }
 
-/* Formulários */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -276,7 +299,6 @@ textarea { min-height: 80px; resize: vertical; }
   .row.three { grid-template-columns: 1fr 1fr 1fr; }
 }
 
-/* Botões */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -314,7 +336,6 @@ textarea { min-height: 80px; resize: vertical; }
 .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
 .btn-lg { padding: 1rem 1.5rem; font-size: 1rem; }
 
-/* Pavimentos e ambientes (formulário do medidor) */
 .pavimento {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -418,7 +439,6 @@ textarea { min-height: 80px; resize: vertical; }
   font-size: 1.1rem;
 }
 
-/* Lista de medições */
 .medicao-item {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -471,7 +491,6 @@ textarea { min-height: 80px; resize: vertical; }
 .badge-aguardando-orcamento { background: var(--info-soft); color: var(--info); }
 .badge-orcado { background: var(--success-soft); color: var(--success); }
 
-/* Detalhe da medição */
 .resumo-obra {
   background: var(--primary);
   color: #FFFFFF;
@@ -578,7 +597,6 @@ textarea { min-height: 80px; resize: vertical; }
   margin-left: 0.5rem;
 }
 
-/* Precificação — cards por sistema */
 .sistema-preco-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -594,10 +612,7 @@ textarea { min-height: 80px; resize: vertical; }
   margin-bottom: 0.75rem;
 }
 
-.sistema-preco-card .nome {
-  font-weight: 700;
-  font-size: 1rem;
-}
+.sistema-preco-card .nome { font-weight: 700; font-size: 1rem; }
 
 .sistema-preco-card .metragem {
   font-family: var(--font-mono);
@@ -647,7 +662,6 @@ textarea { min-height: 80px; resize: vertical; }
   color: var(--accent);
 }
 
-/* Bloco de resumo comercial (mostrado após precificação) */
 .resumo-comercial {
   background: var(--surface-alt);
   border: 1px solid var(--border);
@@ -712,7 +726,6 @@ textarea { min-height: 80px; resize: vertical; }
   margin-bottom: 0.25rem;
 }
 
-/* Sistemas */
 .sistema-item {
   display: flex;
   align-items: center;
@@ -734,7 +747,6 @@ textarea { min-height: 80px; resize: vertical; }
   margin-top: 0.15rem;
 }
 
-/* Estados vazios, loading, toast */
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
@@ -780,7 +792,6 @@ textarea { min-height: 80px; resize: vertical; }
 .toast.success { background: var(--success); }
 .toast.danger { background: var(--danger); }
 
-/* Action bar */
 .action-bar {
   position: sticky;
   bottom: 0;
@@ -797,7 +808,6 @@ textarea { min-height: 80px; resize: vertical; }
 
 .action-bar .btn { flex: 1 1 45%; min-width: 0; }
 
-/* Push banner */
 .push-banner {
   background: var(--accent);
   color: var(--primary);
@@ -825,7 +835,6 @@ textarea { min-height: 80px; resize: vertical; }
   flex-shrink: 0;
 }
 
-/* Utilitários */
 .mt-1 { margin-top: 0.5rem; }
 .mt-2 { margin-top: 1rem; }
 .mt-3 { margin-top: 1.5rem; }
