@@ -6,7 +6,7 @@ const Precificar = {
   medicoes: [],
   medicaoAtual: null,
   estado: {
-    precos_por_sistema: {},   // { sistema_id: preco }
+    precos_por_sistema: {},
     condicao_pagamento: ''
   },
 
@@ -65,10 +65,8 @@ const Precificar = {
       condicao_pagamento: (m.precificacao && m.precificacao.condicao_pagamento) || ''
     };
 
-    // Pré-preencher com preço padrão dos sistemas (ou valor já precificado)
     const sistemasUsados = agruparPorSistema(m);
     sistemasUsados.forEach(s => {
-      // Ordem de prioridade: precificação existente > preço padrão do sistema
       const precoExistente = m.precificacao && m.precificacao.precos_por_sistema
         ? (m.precificacao.precos_por_sistema.find(p => p.sistema_id === s.sistema_id) || {}).preco_m2
         : null;
@@ -80,6 +78,38 @@ const Precificar = {
     this.renderForm();
   },
 
+  // Renderiza o bloco de detalhes da medição (pavimentos, ambientes, medidas)
+  renderDetalhesMedicao(m) {
+    return m.pavimentos.map(pav => `
+      <div class="pavimento-view">
+        <h3>${escapeHtml(pav.nome)}</h3>
+        ${pav.ambientes.map((amb, iAmb) => {
+          const t = calcAmbienteTotal(amb);
+          return `
+            <div class="ambiente-view">
+              <div class="head">
+                <div class="desc">${iAmb + 1}. ${escapeHtml(amb.descricao)}</div>
+              </div>
+              <div class="sistema">${escapeHtml(amb.sistema_nome || '—')}</div>
+              <div class="medidas">
+                <div><span class="k">Piso</span><span class="v">${fmtM2(t.piso)} m²</span></div>
+                <div><span class="k">Paredes</span><span class="v">${fmtM2(t.paredes)} m²</span></div>
+                <div><span class="k">Subtotal</span><span class="v">${fmtM2(t.subtotal)} m²</span></div>
+                <div><span class="k">Sobrep. ${amb.sobreposicao_pct || 0}%</span><span class="v">${fmtM2(t.sobreposicaoM2)} m²</span></div>
+              </div>
+              ${amb.paredes && amb.paredes.length ? `
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.4rem">
+                  Paredes: ${amb.paredes.map(p => `${p.comprimento_m} × ${p.altura_m}m`).join(' + ')}
+                </div>` : ''}
+              ${amb.observacoes ? `<div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.4rem;font-style:italic">📝 ${escapeHtml(amb.observacoes)}</div>` : ''}
+              <div class="total">Total: <span class="value">${fmtM2(t.total)} m²</span></div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `).join('');
+  },
+
   renderForm() {
     const m = this.medicaoAtual;
     const sistemasUsados = agruparPorSistema(m);
@@ -88,16 +118,26 @@ const Precificar = {
 
     container.innerHTML = `
       <h1 class="screen-title">Precificar</h1>
-      <p class="screen-subtitle">Defina o preço por metro quadrado de cada sistema usado nesta obra.</p>
+      <p class="screen-subtitle">Confira os detalhes da medição e defina o preço por metro quadrado de cada sistema.</p>
 
       <div class="resumo-obra">
         <h2>${escapeHtml(m.cliente)}</h2>
         <div class="meta">
           ${m.endereco ? `<span>📍 ${escapeHtml(m.endereco)}</span>` : ''}
+          ${m.contato ? `<span>📞 ${escapeHtml(m.contato)}</span>` : ''}
           <span>📅 ${fmtData(m.data_visita)}</span>
           <span>📐 ${fmtM2(totalM2)} m² totais</span>
         </div>
+        ${m.observacoes_gerais ? `<div style="opacity:0.85;font-size:0.85rem;margin-top:0.5rem">📝 ${escapeHtml(m.observacoes_gerais)}</div>` : ''}
       </div>
+
+      <details class="card" open>
+        <summary style="cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+          <span class="card-title" style="margin:0">Detalhes da medição</span>
+          <span class="text-muted" style="font-size:0.8rem">Clique para recolher/expandir</span>
+        </summary>
+        ${this.renderDetalhesMedicao(m)}
+      </details>
 
       <div class="card">
         <div class="card-title">Preço por sistema</div>
@@ -149,7 +189,6 @@ const Precificar = {
   },
 
   bindForm() {
-    // Atualiza preços ao vivo
     document.querySelectorAll('.preco-sistema').forEach(inp => {
       inp.addEventListener('input', debounce(() => {
         const card = inp.closest('[data-sistema]');
@@ -250,7 +289,6 @@ const Precificar = {
     await Sistemas.carregar();
     this.medicaoAtual = null;
 
-    // Reset do conteúdo para mostrar lista de novo
     document.getElementById('precificarConteudo').innerHTML = `
       <h1 class="screen-title">Precificar</h1>
       <p class="screen-subtitle">Medições aguardando definição de valores.</p>
