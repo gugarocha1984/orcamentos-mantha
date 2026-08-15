@@ -2,6 +2,12 @@
 // orcamentista.js — tela da Anne (medições precificadas prontas para orçamento)
 // ==========================================================================
 
+const STATUS_COMERCIAL_OPCOES = [
+  { valor: 'aguardando_resposta', label: '🟡 Aguardando resposta' },
+  { valor: 'aprovado',            label: '✅ Aprovado' },
+  { valor: 'recusado',            label: '❌ Recusado' }
+];
+
 const Orcamentista = {
   medicoes: [],
 
@@ -32,9 +38,23 @@ const Orcamentista = {
     list.innerHTML = this.medicoes.map(m => {
       const totalM2 = calcMedicaoTotal(m);
       const valor = m.precificacao && m.precificacao.valor_total ? m.precificacao.valor_total : 0;
+      const st = normalizarStatus(m.status);
+      const isOrcado = st === 'orcado';
+      const statusComercial = m.status_comercial || 'aguardando_resposta';
+
+      // Se está orçado → mostra o select de status comercial
+      // Senão → mostra o badge do status operacional
+      const ladoDireito = isOrcado
+        ? `<select class="status-comercial-select status-${statusComercial}" data-medicao="${m.id}" aria-label="Alterar status comercial">
+             ${STATUS_COMERCIAL_OPCOES.map(o => `
+               <option value="${o.valor}" ${o.valor === statusComercial ? 'selected' : ''}>${o.label}</option>
+             `).join('')}
+           </select>`
+        : badgeStatus(m.status);
+
       return `
-        <div class="medicao-item" data-open="${m.id}">
-          <div class="info">
+        <div class="medicao-item">
+          <div class="info-clickable" data-open="${m.id}">
             <h4>${escapeHtml(m.cliente)}</h4>
             <div class="meta">
               <span>📅 ${fmtData(m.data_visita)}</span>
@@ -42,13 +62,49 @@ const Orcamentista = {
               <span>💰 ${fmtBRL(valor)}</span>
             </div>
           </div>
-          ${badgeStatus(m.status)}
+          ${ladoDireito}
         </div>
       `;
     }).join('');
 
+    // Handler: clique no card (área do lado esquerdo) abre o detalhe
     list.querySelectorAll('[data-open]').forEach(el => {
       el.onclick = () => this.abrirDetalhe(el.dataset.open);
+    });
+
+    // Handler: mudança no select de status comercial
+    list.querySelectorAll('.status-comercial-select').forEach(sel => {
+      // Impede que clicar no select abra o detalhe
+      sel.addEventListener('click', e => e.stopPropagation());
+      sel.addEventListener('mousedown', e => e.stopPropagation());
+
+      sel.addEventListener('change', async () => {
+        const id = sel.dataset.medicao;
+        const novoStatus = sel.value;
+        // Atualização visual otimista: aplica classe imediatamente
+        sel.className = 'status-comercial-select status-' + novoStatus;
+        sel.disabled = true;
+
+        try {
+          await api('/medicao', {
+            method: 'PATCH',
+            body: { id, status_comercial: novoStatus }
+          });
+          toast('Status atualizado.', 'success');
+          // Atualiza cache local
+          const m = this.medicoes.find(x => x.id === id);
+          if (m) m.status_comercial = novoStatus;
+        } catch (e) {
+          toast('Erro: ' + e.message, 'danger');
+          // Reverte visual em caso de erro
+          const m = this.medicoes.find(x => x.id === id);
+          const statusAntigo = (m && m.status_comercial) || 'aguardando_resposta';
+          sel.value = statusAntigo;
+          sel.className = 'status-comercial-select status-' + statusAntigo;
+        } finally {
+          sel.disabled = false;
+        }
+      });
     });
   },
 
@@ -63,6 +119,8 @@ const Orcamentista = {
     const totalM2 = calcMedicaoTotal(m);
     const container = document.getElementById('detalheContent');
     const precificacao = m.precificacao || null;
+    const isOrcado = normalizarStatus(m.status) === 'orcado';
+    const statusComercial = m.status_comercial || 'aguardando_resposta';
 
     container.innerHTML = `
       <div class="resumo-obra">
@@ -97,6 +155,13 @@ const Orcamentista = {
             <div class="k">Condição de pagamento</div>
             <div>${escapeHtml(precificacao.condicao_pagamento)}</div>
           </div>
+          ${isOrcado ? `
+            <div class="condicao" style="margin-top:0.5rem">
+              <div class="k">Status comercial</div>
+              <div style="margin-top:0.35rem">
+                ${(STATUS_COMERCIAL_OPCOES.find(o => o.valor === statusComercial) || {}).label || statusComercial}
+              </div>
+            </div>` : ''}
         </div>
       ` : ''}
 
@@ -131,7 +196,7 @@ const Orcamentista = {
 
       <div class="action-bar">
         <button class="btn btn-primary" data-editar>Editar</button>
-        ${normalizarStatus(m.status) === 'orcado'
+        ${isOrcado
           ? '<button class="btn btn-secondary" data-marcar="aguardando_orcamento">Reabrir</button>'
           : '<button class="btn btn-secondary" data-marcar="orcado">Marcar orçado</button>'}
         <button class="btn btn-secondary" onclick="window.print()">Imprimir / PDF</button>
@@ -159,6 +224,9 @@ const Orcamentista = {
         try {
           await api('/medicao', { method: 'PATCH', body: { id: m.id, status: novoStatus } });
           m.status = novoStatus;
+          if (novoStatus === 'orcado' && !m.status_comercial) {
+            m.status_comercial = 'aguardando_resposta';
+          }
           toast('Status atualizado.', 'success');
           this.renderDetalhe(m);
         } catch (e) {
