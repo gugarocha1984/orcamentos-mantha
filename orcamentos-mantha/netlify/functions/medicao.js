@@ -1,7 +1,9 @@
-// /api/medicao — PATCH (status ou medição completa) e DELETE
+// /api/medicao — PATCH (status, status comercial ou medição completa) e DELETE
 
 const { lerJSON, escreverJSON } = require('./_lib/github');
 const { enviarParaTodos } = require('./_lib/push');
+
+const STATUS_COMERCIAIS = ['aguardando_resposta', 'aprovado', 'recusado'];
 
 exports.handler = async (event) => {
   let payload;
@@ -40,8 +42,9 @@ exports.handler = async (event) => {
           ...payload.medicao,
           id: antiga.id,
           criado_em: antiga.criado_em,
-          status: 'aguardando_precificacao',   // qualquer edição volta o fluxo
-          precificacao: null,                   // limpa a precificação anterior
+          status: 'aguardando_precificacao',
+          precificacao: null,
+          status_comercial: null,               // reseta status comercial ao editar
           atualizado_em: new Date().toISOString()
         };
         medicoes[idx] = nova;
@@ -64,12 +67,34 @@ exports.handler = async (event) => {
         };
       }
 
-      // Só status
+      // Só status comercial (aguardando_resposta, aprovado, recusado)
+      if (payload.status_comercial !== undefined) {
+        const novo = payload.status_comercial;
+        if (novo !== null && !STATUS_COMERCIAIS.includes(novo)) {
+          return { statusCode: 400, body: JSON.stringify({ error: 'status_comercial inválido' }) };
+        }
+        medicoes[idx].status_comercial = novo;
+        medicoes[idx].atualizado_em = new Date().toISOString();
+        await escreverJSON('medicoes.json', medicoes, sha, `Status comercial: ${medicoes[idx].cliente}`);
+        return {
+          statusCode: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ok: true, medicao: medicoes[idx] })
+        };
+      }
+
+      // Só status operacional
       if (payload.status && ['aguardando_precificacao', 'aguardando_orcamento', 'orcado', 'pendente'].includes(payload.status)) {
-        // Compatibilidade: 'pendente' antigo vira 'aguardando_precificacao'
         const novoStatus = payload.status === 'pendente' ? 'aguardando_precificacao' : payload.status;
         medicoes[idx].status = novoStatus;
         medicoes[idx].atualizado_em = new Date().toISOString();
+
+        // Ao marcar como orçado, define automaticamente o status comercial
+        // como "aguardando_resposta" (se ainda não tiver)
+        if (novoStatus === 'orcado' && !medicoes[idx].status_comercial) {
+          medicoes[idx].status_comercial = 'aguardando_resposta';
+        }
+
         await escreverJSON('medicoes.json', medicoes, sha, `Status: ${medicoes[idx].cliente}`);
         return {
           statusCode: 200,
