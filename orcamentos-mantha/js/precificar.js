@@ -78,7 +78,6 @@ const Precificar = {
     this.renderForm();
   },
 
-  // Renderiza o bloco de detalhes da medição (pavimentos, ambientes, medidas)
   renderDetalhesMedicao(m) {
     return m.pavimentos.map(pav => `
       <div class="pavimento-view">
@@ -181,6 +180,8 @@ const Precificar = {
 
       <div class="action-bar">
         <button type="button" class="btn btn-secondary" id="btnCancelPrec">Cancelar</button>
+        <button type="button" class="btn btn-secondary" id="btnEditarMedicao">Editar medição</button>
+        <button type="button" class="btn btn-danger" id="btnExcluirMedicao">Excluir</button>
         <button type="button" class="btn btn-primary" id="btnSalvarPrec">Enviar para orçamento</button>
       </div>
     `;
@@ -210,6 +211,32 @@ const Precificar = {
     };
 
     document.getElementById('btnSalvarPrec').onclick = () => this.salvar();
+
+    // Editar medição — abre o formulário do Arthur com os dados pré-carregados
+    document.getElementById('btnEditarMedicao').onclick = () => {
+      if (!confirm('Abrir esta medição para edição? Você (ou o Arthur) pode ajustar os dados e reenviar.')) return;
+      Medidor.carregarParaEdicao(this.medicaoAtual);
+      this.medicaoAtual = null;
+      App.ir('medidor');
+    };
+
+    // Excluir medição — apaga a medição pra sempre
+    document.getElementById('btnExcluirMedicao').onclick = async () => {
+      const cliente = this.medicaoAtual.cliente;
+      if (!confirm(`Excluir a medição de "${cliente}"?\n\nEsta ação não pode ser desfeita pelo app.`)) return;
+
+      const btn = document.getElementById('btnExcluirMedicao');
+      btn.disabled = true;
+      try {
+        await api('/medicao', { method: 'DELETE', body: { id: this.medicaoAtual.id } });
+        toast('Medição excluída.', 'success');
+        this.medicaoAtual = null;
+        setTimeout(() => App.ir('home'), 700);
+      } catch (e) {
+        toast('Erro ao excluir: ' + e.message, 'danger');
+        btn.disabled = false;
+      }
+    };
   },
 
   atualizarTotais() {
